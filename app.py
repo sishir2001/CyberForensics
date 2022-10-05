@@ -20,13 +20,19 @@ except:
     from multiprocess import Process
 
     #flask setup
-    from flask import Flask, redirect, url_for, session
+    from flask import Flask, redirect, url_for, session,request
     app = Flask(__name__)
     server = Process(target=app.run)
     
     # authlib setup
     from authlib.integrations.flask_client import OAuth
     oauth = OAuth(app)
+
+    def shutdown_server():
+        func = request.environ.get('werkzeug.server.shutdown')
+        if func is None:
+            raise RuntimeError('Not running with the Werkzeug Server')
+        func()
 
     # Session config
     app.secret_key = os.getenv("APP_SECRET_KEY")
@@ -60,7 +66,8 @@ except:
         access_token = google.authorize_access_token()  # Access token from google (needed to get user info)
         print(access_token)
         # server.terminate()
-        return "Loggen In"
+        shutdown_server()
+        # return "Loggen In"
 
     # open a webbrowser with the login route
     webbrowser.open_new_tab("localhost:5000/login")
@@ -70,9 +77,9 @@ except:
     # close the flask server 
     # storing the access_token in environment variable
     if __name__ == "__main__":
-        server.start()
-        # app.run(debug=True)
-        server.join()
+        # server.start()
+        app.run(debug=True)
+        # server.join()
 
 
 
